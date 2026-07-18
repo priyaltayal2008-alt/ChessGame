@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Chess Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            grid-template-rows: repeat(8, minmax(0, 1fr));
+            width: min(400px, 90vw);
+            height: min(400px, 90vw);
+            touch-action: none;
+        }
+
+        .piece.white {
+            color: white;
+            filter: drop-shadow(0 0 2px rgba(0, 0, 0, 1));
+        }
+
+        .piece.black {
+            color: black;
+        }
+
+        .flipped {
+            transform: rotate(180deg);
+        }
+
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .square.light {
+            background-color: #f0d9b5;
+        }
+
+        .square.dark {
+            background-color: #b58863;
+        }
+
+        .piece {
+            font-size: clamp(20px, 5vw, 36px);
+            cursor: pointer;
+        }
+
+        .piece.draggable {
+            cursor: grab;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .flipped .piece {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+<div class="min-h-screen bg-zinc-900 flex justify-center items-center px-4">
+
+    <!-- FORM -->
+    <div id="playerForm" class="flex flex-col items-center gap-4 bg-zinc-800 p-6 mx-4 rounded-2xl shadow-lg w-full max-w-sm">
+        <h1 class="text-white text-3xl font-bold tracking-wide">♙ Chess</h1>
+        <p class="text-zinc-400 text-sm mb-2">Enter your details to start</p>
+        <input id="nameInput" type="text" placeholder="Your name"
+            class="border border-zinc-600 bg-zinc-700 text-white placeholder-zinc-400 p-2 rounded-lg w-full focus:outline-none focus:border-yellow-400"/>
+        <input id="countryInput" type="text" placeholder="Your country"
+            class="border border-zinc-600 bg-zinc-700 text-white placeholder-zinc-400 p-2 rounded-lg w-full focus:outline-none focus:border-yellow-400"/>
+        <select id="timerSelect" class="border border-zinc-600 bg-zinc-700 text-white p-2 rounded-lg w-full">
+            <option value="" disabled selected>Select time</option>
+            <option value="3">3 minutes</option>
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+        </select>
+        <button id="submitBtn"
+            class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-lg w-full transition">
+            Start Game
+        </button>
+    </div>
+
+    <!-- GAME -->
+    <div id="gameContainer" class="flex flex-col items-center gap-3 w-full max-w-sm" style="display:none">
+
+        <!-- BLACK player card -->
+        <div class="flex justify-between items-center w-full bg-zinc-800 px-4 py-3 rounded-xl">
+            <div>
+                <p class="text-white font-bold" id="blackName">---</p>
+                <p class="text-zinc-400 text-sm" id="blackCountry">---</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-zinc-400 mb-1">♚ BLACK</p>
+                <p id="blackTimer" class="text-yellow-400 font-mono text-2xl font-bold">--:--</p>
+            </div>
+        </div>
+
+        <!-- BOARD -->
+        <div id="chessboard" class="chessboard rounded-lg overflow-hidden shadow-2xl" style="display:none"></div>
+
+        <!-- TURN INDICATOR -->
+        <div id="turnIndicator" class="text-zinc-400 text-sm tracking-wide">Waiting...</div>
+
+        <!-- WHITE player card -->
+        <div class="flex justify-between items-center w-full bg-zinc-800 px-4 py-3 rounded-xl">
+            <div>
+                <p class="text-white font-bold" id="whiteName">---</p>
+                <p class="text-zinc-400 text-sm" id="whiteCountry">---</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-zinc-400 mb-1">♔ WHITE</p>
+                <p id="whiteTimer" class="text-yellow-400 font-mono text-2xl font-bold">--:--</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="gameOverScreen" style="display:none" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 px-4">
+        <div class="bg-zinc-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl w-full max-w-xs">
+            <p id="gameOverTitle" class="text-4xl font-bold text-yellow-400">♟</p>
+            <p id="gameOverMessage" class="text-white text-xl font-semibold text-center">Game Over</p>
+            <p id="gameOverReason" class="text-zinc-400 text-sm">---</p>
+            <button onclick="location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-lg mt-2 w-full">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="/js/chessgame.js"></script>
+</body>
+</html>
